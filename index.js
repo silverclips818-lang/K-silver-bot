@@ -125,10 +125,55 @@ async function startXeonBotInc() {
     store.bind(XeonBotInc.ev)
 
     // Message handling
+
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
-        try {
-            const mek = chatUpdate.messages[0]
-            if (!mek.message) return
+    try {
+        const mek = chatUpdate.messages[0]
+        if (!mek || !mek.message) return
+
+        const from = mek.key?.remoteJid
+        if (!from) return
+
+        // Normalize ephemeral message first
+        let message = mek.message
+
+        if (message?.ephemeralMessage) {
+            message = message.ephemeralMessage.message
+        }
+
+        // Anti-photo / anti-video
+
+        const viewOnce =
+            message?.viewOnceMessage?.message?.imageMessage ||
+            message?.viewOnceMessage?.message?.videoMessage ||
+            message?.viewOnceMessageV2?.message?.imageMessage ||
+            message?.viewOnceMessageV2?.message?.videoMessage ||
+            message?.viewOnceMessageV2Extension?.message?.imageMessage ||
+            message?.viewOnceMessageV2Extension?.message?.videoMessage
+
+        const normalMedia =
+            message?.imageMessage ||
+            message?.videoMessage
+
+        const isGroup = from.endsWith('@g.us')
+
+        if (isGroup && normalMedia && !viewOnce) {
+
+            await XeonBotInc.sendMessage(from, {
+                delete: mek.key
+            })
+
+            await XeonBotInc.sendMessage(from, {
+                text: "⚠️ Only view once media is allowed in this group."
+            })
+
+            return
+        }
+
+    } catch (err) {
+        console.log("Error in anti-media system:", err)
+    }
+})
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
                 await handleStatus(XeonBotInc, chatUpdate);
