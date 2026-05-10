@@ -148,6 +148,9 @@ async function startXeonBotInc() {
         if (msg?.viewOnceMessageV2) {
             msg = msg.viewOnceMessageV2.message
         }
+        if (msg?.viewOnceMessageV2Extension) {
+            msg = msg.viewOnceMessageV2Extension.message
+        }
 
         const isGroup = from.endsWith('@g.us')
 
@@ -156,8 +159,9 @@ async function startXeonBotInc() {
             msg?.videoMessage
 
         const viewOnce =
-            msg?.imageMessage ||
-            msg?.videoMessage
+            mek.message?.viewOnceMessage ||
+            mek.message?.viewOnceMessageV2 ||
+            mek.message?.viewOnceMessageV2Extension
 
         if (isGroup && normalMedia && !viewOnce) {
 
@@ -172,7 +176,7 @@ async function startXeonBotInc() {
             return
         }
 
-        // status handler (keep INSIDE try block if needed)
+        // status handler
         if (mek.key?.remoteJid === 'status@broadcast') {
             await handleStatus(XeonBotInc, chatUpdate)
             return
@@ -182,14 +186,6 @@ async function startXeonBotInc() {
         console.log("Anti-media error:", err)
     }
 })
-            }
-            // In private mode, only block non-group messages (allow groups for moderation)
-            // Note: XeonBotInc.public is not synced, so we check mode in main.js instead
-            // This check is kept for backward compatibility but mainly blocks DMs
-            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') {
-                const isGroup = mek.key?.remoteJid?.endsWith('@g.us')
-                if (!isGroup) return // Block DMs in private mode, but allow group messages
-            }
             if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
 
             // Clear message retry cache to prevent memory bloat
