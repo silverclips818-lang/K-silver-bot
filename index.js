@@ -151,15 +151,13 @@ async function startXeonBotInc() {
 
         const isGroup = from.endsWith('@g.us')
 
-        // detect media AFTER unwrapping
         const normalMedia =
             msg?.imageMessage ||
             msg?.videoMessage
 
-        // detect viewOnce properly
         const viewOnce =
-            mek.message?.viewOnceMessage ||
-            mek.message?.viewOnceMessageV2
+            msg?.imageMessage ||
+            msg?.videoMessage
 
         if (isGroup && normalMedia && !viewOnce) {
 
@@ -174,14 +172,16 @@ async function startXeonBotInc() {
             return
         }
 
+        // status handler (keep INSIDE try block if needed)
+        if (mek.key?.remoteJid === 'status@broadcast') {
+            await handleStatus(XeonBotInc, chatUpdate)
+            return
+        }
+
     } catch (err) {
         console.log("Anti-media error:", err)
     }
 })
-            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                await handleStatus(XeonBotInc, chatUpdate);
-                return;
             }
             // In private mode, only block non-group messages (allow groups for moderation)
             // Note: XeonBotInc.public is not synced, so we check mode in main.js instead
