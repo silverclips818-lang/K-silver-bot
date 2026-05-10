@@ -129,33 +129,37 @@ async function startXeonBotInc() {
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
     try {
         const mek = chatUpdate.messages[0]
-        if (!mek || !mek.message) return
+        if (!mek?.message) return
 
         const from = mek.key?.remoteJid
         if (!from) return
 
-        // Normalize ephemeral message first
-        let message = mek.message
+        let msg = mek.message
 
-        if (message?.ephemeralMessage) {
-            message = message.ephemeralMessage.message
+        // unwrap ephemeral
+        if (msg?.ephemeralMessage) {
+            msg = msg.ephemeralMessage.message
         }
 
-        // Anti-photo / anti-video
-
-        const viewOnce =
-            message?.viewOnceMessage?.message?.imageMessage ||
-            message?.viewOnceMessage?.message?.videoMessage ||
-            message?.viewOnceMessageV2?.message?.imageMessage ||
-            message?.viewOnceMessageV2?.message?.videoMessage ||
-            message?.viewOnceMessageV2Extension?.message?.imageMessage ||
-            message?.viewOnceMessageV2Extension?.message?.videoMessage
-
-        const normalMedia =
-            message?.imageMessage ||
-            message?.videoMessage
+        // unwrap viewOnce layers
+        if (msg?.viewOnceMessage) {
+            msg = msg.viewOnceMessage.message
+        }
+        if (msg?.viewOnceMessageV2) {
+            msg = msg.viewOnceMessageV2.message
+        }
 
         const isGroup = from.endsWith('@g.us')
+
+        // detect media AFTER unwrapping
+        const normalMedia =
+            msg?.imageMessage ||
+            msg?.videoMessage
+
+        // detect viewOnce properly
+        const viewOnce =
+            mek.message?.viewOnceMessage ||
+            mek.message?.viewOnceMessageV2
 
         if (isGroup && normalMedia && !viewOnce) {
 
@@ -164,14 +168,14 @@ async function startXeonBotInc() {
             })
 
             await XeonBotInc.sendMessage(from, {
-                text: "⚠️ Only view once media is allowed in this group."
+                text: "⚠️ Only view-once media is allowed in this group."
             })
 
             return
         }
 
     } catch (err) {
-        console.log("Error in anti-media system:", err)
+        console.log("Anti-media error:", err)
     }
 })
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
