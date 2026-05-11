@@ -301,6 +301,34 @@ async function handleMessages(sock, messageUpdate, printLog) {
             } catch (e) { }
         }
 
+        const activeWCG = wcgGames.get(chatId)
+
+if (
+    activeWCG &&
+    activeWCG.phase === 'JOINING' &&
+    userMessage === 'join'
+) {
+
+    if (activeWCG.players.find(p => p.jid === senderId)) {
+
+        await sock.sendMessage(chatId, {
+            text: '❌ You already joined.'
+        })
+
+        return
+    }
+
+    activeWCG.players.push({
+        jid: senderId
+    })
+
+    await sock.sendMessage(chatId, {
+        text: `✅ @${senderId.split('@')[0]} joined WCG.`,
+        mentions: [senderId]
+    })
+
+    return
+}
         // Then check for command prefix
         if (!userMessage.startsWith('.')) {
             // Show typing indicator if autotyping is enabled
