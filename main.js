@@ -435,7 +435,7 @@ if (
             text: '❌ Group only command.'
         })
 
-        break
+        break;
     }
 
     if (wcgGames.has(chatId)) {
@@ -444,14 +444,14 @@ if (
             text: '❌ A WCG game is already running.'
         })
 
-        break
+        break;
     }
 
     createWCGGame(chatId, senderId)
 
     await startWCGJoinPhase(sock, chatId)
 
-    break
+    break;
             }
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
