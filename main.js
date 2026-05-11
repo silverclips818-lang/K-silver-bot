@@ -329,6 +329,20 @@ if (
 
     return
 }
+        if (
+    wcgGames.has(chatId) &&
+    !userMessage.startsWith('.')
+) {
+
+    const handled = await handleWCGWord(
+        sock,
+        chatId,
+        senderId,
+        userMessage
+    )
+
+    if (handled) return
+        }
         // Then check for command prefix
         if (!userMessage.startsWith('.')) {
             // Show typing indicator if autotyping is enabled
