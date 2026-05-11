@@ -427,32 +427,28 @@ if (
                 }
                 commandExecuted = true;
                 break;
-                case userMessage === '.wcg':
+                case userMessage === '.wcg': {
 
     if (!isGroup) {
-
         await sock.sendMessage(chatId, {
             text: '❌ Group only command.'
-        })
-
+        });
         break;
     }
 
     if (wcgGames.has(chatId)) {
-
         await sock.sendMessage(chatId, {
             text: '❌ A WCG game is already running.'
-        })
-
+        });
         break;
     }
 
-    createWCGGame(chatId, senderId)
+    createWCGGame(chatId, senderId);
 
-    await startWCGJoinPhase(sock, chatId)
+    await startWCGJoinPhase(sock, chatId);
 
     break;
-            }
+}
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);
